@@ -4,107 +4,317 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="theme-color" content="#0a0a0f" />
-  <title>Gpyth Chat — Masuk</title>
+  <title>Gpyth Chat</title>
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cropperjs@1.6.1/dist/cropper.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/cropperjs@1.6.1/dist/cropper.min.js" defer></script>
+  <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js" defer></script>
   <link rel="stylesheet" href="style.css" />
-  <style>
-    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-    html, body { min-height: 100vh; font-family: 'Segoe UI', system-ui, sans-serif; background: #0a0a0f; color: #e0e0e0; -webkit-font-smoothing: antialiased; overscroll-behavior: none; }
-    .hidden { display: none !important; }
-    #loadingScreen { position: fixed; inset: 0; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; background: radial-gradient(ellipse at center, #1a0033 0%, #0a0a0f 75%); transition: opacity .4s ease; }
-    #loadingScreen.fade-out { opacity: 0; pointer-events: none; }
-    .loading-ring { width: 84px; height: 84px; border: 3px solid rgba(0, 255, 200, .18); border-top-color: #00ffc8; border-radius: 50%; animation: gpyth-spin 1s linear infinite; box-shadow: 0 0 30px rgba(0, 255, 200, .4), inset 0 0 20px rgba(0, 255, 200, .15); }
-    .loading-text { margin-top: 26px; font-size: 26px; font-weight: 800; letter-spacing: 2px; color: #00ffc8; text-shadow: 0 0 14px rgba(0, 255, 200, .8), 0 0 40px rgba(0, 255, 200, .35); animation: gpyth-pulse 2s ease-in-out infinite; }
-    .loading-sub { margin-top: 10px; color: #777; font-size: 12px; letter-spacing: 3px; text-transform: uppercase; }
-    @keyframes gpyth-spin { to { transform: rotate(360deg); } }
-    @keyframes gpyth-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .55; } }
-    .screen { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; padding: 20px; overflow-y: auto; }
-    .card { width: 100%; max-width: 420px; background: rgba(20, 20, 32, .96); border: 1px solid rgba(0, 255, 200, .18); border-radius: 18px; padding: 28px; box-shadow: 0 0 40px rgba(0, 255, 200, .10); }
-    .brand { color: #00ffc8; font-size: 26px; font-weight: 800; letter-spacing: 2px; text-align: center; text-shadow: 0 0 12px rgba(0, 255, 200, .55); margin-bottom: 6px; }
-    .brand-sub { text-align: center; color: #666; font-size: 12px; letter-spacing: 2px; margin-bottom: 20px; }
-    .auth-form { display: flex; flex-direction: column; gap: 12px; margin-top: 16px; }
-    .auth-form input[type="text"], .auth-form input[type="password"] { background: rgba(0, 0, 0, .45); border: 1px solid rgba(0, 255, 200, .18); color: #fff; padding: 14px 16px; border-radius: 12px; font-size: 15px; outline: none; transition: border-color .2s, box-shadow .2s; }
-    .auth-form input:focus { border-color: #00ffc8; box-shadow: 0 0 0 3px rgba(0, 255, 200, .15); }
-    .btn-primary { display: block; width: 100%; padding: 14px; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer; border: none; font-family: inherit; background: linear-gradient(135deg, #00ffc8, #00b894); color: #0a0a0f; transition: transform .15s, box-shadow .15s; }
-    .btn-primary:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 8px 22px rgba(0, 255, 200, .35); }
-    .btn-primary:disabled { opacity: .5; cursor: not-allowed; transform: none; }
-    .btn-secondary { display: block; width: 100%; padding: 14px; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer; font-family: inherit; background: transparent; border: 1px solid rgba(0, 255, 200, .3); color: #00ffc8; transition: background .2s; }
-    .btn-secondary:hover { background: rgba(0, 255, 200, .08); }
-    .btn-ghost { display: block; width: 100%; padding: 10px; font-size: 15px; font-weight: 500; cursor: pointer; border: none; font-family: inherit; background: transparent; color: #888; text-decoration: underline; }
-    .error { color: #ff4d6d; font-size: 13px; text-align: center; padding: 10px 12px; border-radius: 10px; background: rgba(255, 77, 109, .08); border: 1px solid rgba(255, 77, 109, .2); margin-top: 12px; display: none; line-height: 1.4; }
-    .error.show { display: block; }
-    .success { color: #00ffc8; font-size: 13px; text-align: center; padding: 10px 12px; border-radius: 10px; background: rgba(0, 255, 200, .08); border: 1px solid rgba(0, 255, 200, .2); margin-top: 12px; display: none; line-height: 1.4; }
-    .success.show { display: block; }
-    .divider { display: flex; align-items: center; gap: 12px; color: #555; font-size: 11px; text-transform: uppercase; letter-spacing: 2px; margin: 18px 0; }
-    .divider::before, .divider::after { content: ""; flex: 1; height: 1px; background: rgba(255, 255, 255, .08); }
-    .tnc-content { font-size: 13.5px; line-height: 1.7; color: #b0b0b0; max-height: 40vh; overflow-y: auto; padding-right: 6px; margin-bottom: 18px; }
-    .tnc-content p { margin-bottom: 10px; }
-    .tnc-content strong { color: #00ffc8; }
-    .checkbox-row { display: flex; align-items: center; gap: 10px; font-size: 13px; color: #b0b0b0; cursor: pointer; margin-top: 5px; }
-    .checkbox-row input[type="checkbox"] { width: 18px; height: 18px; accent-color: #00ffc8; cursor: pointer; }
-  </style>
 </head>
 <body>
 
-  <div id="loadingScreen" aria-live="polite">
-    <div class="loading-ring"></div>
-    <div class="loading-text">Gpyth Chat</div>
-    <div class="loading-sub">Memuat...</div>
-    <audio id="loadingAudio" loop preload="auto"></audio>
-  </div>
+<div class="app-shell">
+  <div id="pullToRefresh" class="ptr-container"><span class="spinner"></span></div>
+  <header class="app-header"><div class="header-logo"><i class="ph-fill ph-hexagon"></i> Gpyth</div></header>
 
-  <div id="tncScreen" class="screen hidden">
-    <div class="card">
-      <div class="brand">Gpyth Chat</div>
-      <div class="brand-sub">SYARAT &amp; KETENTUAN</div>
-      <div class="tnc-content">
-        <p><strong>1. Konten.</strong> Dilarang mengunggah/menyebarkan konten ilegal, SARA, pornografi, atau yang melanggar hukum.</p>
-        <p><strong>2. Privasi.</strong> Data yang kamu unggah (foto, voice note, chat) tersimpan di Firestore dan menjadi tanggung jawabmu.</p>
-        <p><strong>3. Etika.</strong> Jaga sopan santun antar pengguna. Harassment tidak ditoleransi.</p>
-        <p><strong>4. Moderasi.</strong> Admin berhak menghapus pesan/akun yang melanggar tanpa pemberitahuan.</p>
-        <p><strong>5. Data.</strong> Semua gambar dikompres di perangkatmu sebelum diunggah (Base64/Cloudinary) — Firebase Storage tidak digunakan.</p>
-        <p><strong>6. Persetujuan.</strong> Dengan menekan tombol <em>Saya Setuju</em>, kamu menerima semua ketentuan di atas.</p>
+  <main class="app-content" id="appContent">
+    <!-- TAB 1: BERANDA -->
+    <section id="tabFeed" class="tab-panel active">
+      <div class="feed-wrap">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+          <div style="font-weight:800; font-size:16px; color:var(--text-0);">Beranda</div>
+          <button onclick="openModal('liveModal')" class="btn-secondary" style="padding:6px 12px; font-size:12px; border-radius:20px;"><i class="ph-fill ph-video-camera"></i> Live</button>
+        </div>
+        <div class="feed-composer">
+          <div class="composer-row">
+            <div id="composerAvatar" class="post-avatar"><div id="composerAvatarFallback" class="avatar-fallback">?</div></div>
+            <textarea id="composerText" class="composer-textarea" placeholder="Apa yang kamu pikirkan?" maxlength="2000"></textarea>
+          </div>
+          <div id="composerImagePreview" class="composer-image-preview" style="display:none;">
+            <img id="composerImagePreviewImg" alt="" />
+            <button id="composerRemoveImage" class="btn-remove-img" type="button">✕</button>
+          </div>
+          <div class="composer-actions" style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
+            <div class="row gap-8" style="display:flex; gap:8px;">
+              <button id="composerImageBtn" class="btn-icon small" type="button"><i class="ph ph-image"></i></button>
+              <input id="composerImageInput" type="file" accept="image/*,video/*" class="hidden" />
+            </div>
+            <button id="composerPostBtn" class="btn-primary" type="button" style="padding:8px 20px;font-size:13.5px;">Posting</button>
+          </div>
+        </div>
+        <div id="feedList" class="feed-list"></div>
       </div>
-      <button id="btnAcceptTnc" class="btn-primary" type="button">Saya Setuju</button>
-    </div>
-  </div>
+    </section>
 
-  <div id="authScreen" class="screen hidden">
-    <div class="card">
-      <div class="brand">Gpyth Chat</div>
-      <div class="brand-sub">CHATTING · FEED · CALL</div>
-      
-      <div id="authError" class="error" role="alert"></div>
-      <div id="authSuccess" class="success" role="alert"></div>
+    <!-- TAB 2: REELS -->
+    <section id="tabReels" class="tab-panel"><div id="reelsContainer" class="reels-container"></div></section>
 
-      <!-- LOGIN -->
-      <form id="loginForm" class="auth-form" autocomplete="on" novalidate>
-        <input id="loginUsername" type="text" placeholder="Username" autocomplete="username" autocapitalize="none" spellcheck="false" required />
-        <input id="loginPassword" type="password" placeholder="Password" autocomplete="current-password" required />
-        <button type="submit" id="btnLogin" class="btn-primary">Masuk</button>
-        <button type="button" id="btnShowRegister" class="btn-secondary">Belum punya akun? Daftar</button>
-      </form>
+    <!-- TAB 3: CHAT -->
+    <section id="tabChat" class="tab-panel">
+      <div class="chat-header-actions">
+        <input id="chatSearchInput" type="text" placeholder="Cari pesan..." />
+        <button onclick="openModal('waAddMenuModal')" class="btn-icon"><i class="ph ph-plus"></i></button>
+      </div>
+      <div class="chat-status-bar" id="chatStatusBar">
+        <div class="status-item add-status" id="btnAddStoryTrigger">
+          <div class="status-circle"><i class="ph ph-plus"></i></div><span>Status Saya</span>
+        </div>
+        <div id="chatStatusList" style="display:flex; gap:12px;"></div>
+      </div>
+      <div id="chatListContainer" class="chat-list"></div>
+    </section>
 
-      <!-- REGISTER -->
-      <form id="registerForm" class="auth-form hidden" autocomplete="on" novalidate>
-        <input id="regDisplayName" type="text" placeholder="Nama Tampilan (Contoh: Budi)" maxlength="40" required />
-        <input id="regUsername" type="text" placeholder="Username (3–20, a-z 0-9 _)" autocomplete="username" autocapitalize="none" spellcheck="false" required />
-        <input id="regPassword" type="password" placeholder="Password (min 6 karakter)" autocomplete="new-password" required />
-        <input id="regConfirm" type="password" placeholder="Konfirmasi Password" autocomplete="new-password" required />
+    <!-- TAB 4: PROFIL (LAYOUT BARU) -->
+    <section id="tabProfile" class="tab-panel">
+      <div class="profile-wrap">
+        <!-- Banner -->
+        <div class="profile-banner">
+          <img id="profileBannerImg" class="hidden" alt="" style="width:100%;height:100%;object-fit:cover;" />
+          <button onclick="document.getElementById('profileBannerInput').click()" type="button" style="position:absolute; top:10px; right:10px; background:rgba(0,0,0,0.6); color:#fff; padding:8px; border-radius:50%; z-index:5; cursor:pointer;"><i class="ph ph-camera" style="font-size:18px;"></i></button>
+          <input id="profileBannerInput" type="file" accept="image/*" class="hidden" />
+        </div>
         
-        <label class="checkbox-row">
-          <input type="checkbox" id="regTncCheck" />
-          <span>Saya menyetujui Syarat & Ketentuan Gpyth Chat.</span>
-        </label>
+        <!-- Avatar & Tombol Kanan -->
+        <div id="profileCardContainer" class="profile-card-basic" style="padding-top:0; background:transparent; border:none;">
+          <div class="profile-avatar-wrap">
+            <div class="profile-avatar">
+              <div id="profileAvatarFallback" class="avatar-fallback">?</div>
+              <img id="profileAvatarImg" class="hidden" alt="" style="width:100%;height:100%;object-fit:cover;" />
+              <button onclick="document.getElementById('profileAvatarInput').click()" type="button" style="position:absolute; bottom:0; right:0; background:var(--neon); color:#000; padding:6px; border-radius:50%; border:2px solid var(--bg-0); z-index:5; cursor:pointer;"><i class="ph ph-camera" style="font-size:14px;"></i></button>
+              <input id="profileAvatarInput" type="file" accept="image/*" class="hidden" />
+            </div>
+            <div style="flex:1;display:flex; justify-content:flex-end; gap:8px;">
+              <button id="profileEditBtn" class="btn-secondary" type="button" style="padding:6px 12px; font-size:12px;">Edit Profil</button>
+              <button onclick="openModal('shopModal')" class="btn-primary" type="button" style="padding:6px 12px; font-size:12px;">Gpyth Shop</button>
+            </div>
+          </div>
 
-        <button type="submit" id="btnRegister" class="btn-primary" disabled>Daftar</button>
-        <button type="button" id="btnShowLogin" class="btn-secondary">Sudah punya akun? Masuk</button>
-      </form>
+          <!-- Info & Story -->
+          <div class="profile-info">
+            <div id="profileName" class="profile-name">-</div>
+            <div id="profileUsername" class="profile-username">@-</div>
+            <div id="profileBio" class="profile-bio"></div>
+            
+            <div class="stories-wrap" style="border:none; padding:10px 0; background:transparent;">
+              <div class="story-item add-story" id="btnAddStory"><div class="story-circle"><i class="ph ph-plus"></i></div><span>Story</span></div>
+              <div id="storiesList" style="display: flex; gap: 12px; overflow-x: auto;"></div>
+            </div>
+          </div>
 
-      <div class="divider">atau</div>
-      <button id="btnGuest" type="button" class="btn-ghost">Masuk sebagai Tamu (Read-only)</button>
+          <div class="profile-stats" style="border-top:none;">
+            <div class="profile-stat"><div id="profileFollowersCount" class="stat-num">0</div><div class="stat-label">Followers</div></div>
+            <div class="profile-stat"><div id="profileFollowingCount" class="stat-num">0</div><div class="stat-label">Following</div></div>
+          </div>
+        </div>
+
+        <!-- Postingan -->
+        <div class="profile-tabs" style="display:flex; border-bottom:1px solid var(--neon-border); margin-bottom:12px;">
+          <button class="profile-tab active" data-ptab="posts" style="flex:1; padding:12px; font-weight:600; color:var(--neon); background:transparent; border:none; border-bottom:2px solid var(--neon); cursor:pointer;">Postingan</button>
+          <button class="profile-tab" data-ptab="reposts" style="flex:1; padding:12px; font-weight:600; color:var(--text-3); background:transparent; border:none; cursor:pointer;">Repost</button>
+          <button class="profile-tab" data-ptab="likes" style="flex:1; padding:12px; font-weight:600; color:var(--text-3); background:transparent; border:none; cursor:pointer;">Disukai</button>
+        </div>
+        <div id="profilePostsList" class="feed-list" style="padding: 0 16px 80px 16px;"></div>
+
+        <!-- Panel Admin -->
+        <div id="adminSection" class="admin-panel hidden">
+          <div style="color:var(--danger); font-weight:800; margin-bottom:14px;">GOD MODE</div>
+          <button onclick="window.toggleGhostMode()" class="btn-secondary" style="width:100%; margin-bottom:12px;">Mode Penyamaran (Ghost)</button>
+          <input id="adminTargetUsername" type="text" placeholder="Username target" class="form-control" />
+          <div style="display:flex; gap:8px; margin-bottom:8px;">
+            <button onclick="window.adminAction('inject')" class="btn-secondary" style="flex:1;">+Followers</button>
+            <button onclick="window.adminAction('verify')" class="btn-secondary" style="flex:1;">✓ Verif</button>
+          </div>
+          <div style="display:flex; gap:8px; margin-bottom:8px;">
+            <button onclick="window.adminAction('premium')" class="btn-secondary" style="flex:1;">★ Premium</button>
+            <button onclick="window.adminAction('admin')" class="btn-secondary" style="flex:1;">⚡ Admin</button>
+          </div>
+          <div style="display:flex; gap:8px; margin-bottom:8px;">
+            <button onclick="window.adminAction('dev')" class="btn-secondary" style="flex:1; color:gold;">👑 Dev</button>
+            <button onclick="window.adminAction('creator')" class="btn-secondary" style="flex:1; color:#a855f7;">🎨 Creator</button>
+          </div>
+          <div style="border-top:1px solid #333; padding-top:10px; margin-top:10px;">
+            <div style="display:flex; gap:8px; margin-bottom:8px;">
+              <input id="adminBanDuration" type="number" placeholder="Hari (0=Perm)" class="form-control" style="flex:1; margin:0;" />
+              <button onclick="window.adminAction('ban')" class="btn-danger" style="flex:1;">Ban</button>
+            </div>
+            <div style="display:flex; gap:8px;">
+              <button onclick="window.adminAction('unban')" class="btn-secondary" style="flex:1;">Unban</button>
+              <button onclick="window.adminAction('scam')" class="btn-danger" style="flex:1;">Tag Scam</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Menu Bawah (Cuma Pengaturan) -->
+        <div class="profile-menu">
+          <div onclick="openModal('settingsModal')" class="profile-menu-item" role="button">
+            <div class="pmi-icon"><i class="ph ph-gear"></i></div><div class="pmi-text">Pengaturan</div><div>›</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 5: PROFIL ORANG LAIN -->
+    <section id="tabUserProfile" class="tab-panel">
+      <div class="profile-wrap">
+        <div class="profile-banner" style="height:160px;">
+          <img id="upBanner" class="hidden" alt="" style="width:100%;height:100%;object-fit:cover;" />
+          <button onclick="switchTab('chat')" type="button" style="position:absolute; top:10px; left:10px; background:rgba(0,0,0,0.6); color:#fff; padding:8px; border-radius:50%; z-index:5;"><i class="ph ph-arrow-left"></i></button>
+        </div>
+        <div id="upCardContainer" class="profile-card-basic">
+          <div class="profile-avatar-wrap" style="margin-top:-50px;">
+            <div class="profile-avatar" style="border-color:var(--bg-0);">
+              <div id="upAvatarFallback" class="avatar-fallback">?</div>
+              <img id="upAvatarImg" class="hidden" alt="" style="width:100%;height:100%;object-fit:cover;" />
+            </div>
+          </div>
+          <div class="profile-info">
+            <div id="upName" class="profile-name">-</div>
+            <div id="upUsername" class="profile-username">@-</div>
+            <div id="upBio" class="profile-bio"></div>
+          </div>
+          <div class="profile-stats">
+            <div class="profile-stat"><div id="upFollowersCount" class="stat-num">0</div><div class="stat-label">Followers</div></div>
+            <div class="profile-stat"><div id="upFollowingCount" class="stat-num">0</div><div class="stat-label">Following</div></div>
+          </div>
+          <div style="padding: 0 16px 16px; display:flex; gap:10px;">
+            <button id="btnUpMessage" class="btn-primary" style="flex:1;">💬 Pesan</button>
+            <button onclick="window.reportScamAction()" class="btn-danger" style="flex:1;">🚩 Report Scam</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <button id="profileFAB" class="fab-btn hidden" type="button"><i class="ph ph-plus"></i></button>
+
+  <nav class="tab-bar">
+    <button onclick="switchTab('feed')" id="tabBtnFeed" class="tab-btn active" type="button"><span class="tab-icon"><i class="ph ph-house"></i></span><span>Beranda</span></button>
+    <button onclick="switchTab('reels')" id="tabBtnReels" class="tab-btn" type="button"><span class="tab-icon"><i class="ph-fill ph-duck"></i></span><span>Reels</span></button>
+    <button onclick="switchTab('chat')" id="tabBtnChat" class="tab-btn" type="button"><span class="tab-icon"><i class="ph ph-chat-teardrop-text"></i></span><span>Chat</span><span id="chatTabBadge" class="tab-badge hidden">0</span></button>
+    <button onclick="switchTab('profile')" id="tabBtnProfile" class="tab-btn" type="button"><span class="tab-icon"><i class="ph ph-user-circle"></i></span><span>Profil</span></button>
+  </nav>
+</div>
+
+<!-- CHAT ROOM -->
+<div id="chatRoom" class="chat-room">
+  <header class="chat-room-header">
+    <button onclick="closeChatRoom()" class="chat-room-back" type="button"><i class="ph ph-caret-left"></i></button>
+    <div id="chatRoomAvatar" class="chat-avatar" style="width:38px;height:38px;border:none;cursor:pointer;"></div>
+    <div class="chat-room-title" style="cursor:pointer;">
+      <div id="chatRoomName" class="chat-room-name">-</div>
+      <div id="chatRoomStatus" class="chat-room-status">-</div>
+    </div>
+    <div class="chat-room-actions" style="display:flex; gap:4px;">
+      <button onclick="startCall(false)" class="btn-icon small" type="button"><i class="ph ph-phone"></i></button>
+      <button onclick="startCall(true)" class="btn-icon small" type="button"><i class="ph ph-video-camera"></i></button>
+      <button onclick="openModal('chatOptionsModal')" class="btn-icon small" type="button"><i class="ph ph-dots-three-vertical"></i></button>
+    </div>
+  </header>
+  <div id="pinnedBanner" class="pinned-banner hidden"><i class="ph-fill ph-push-pin" style="color:var(--neon);"></i><div id="pinnedBannerText" style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">-</div><button onclick="document.getElementById('pinnedBanner').classList.add('hidden')" class="pin-close" type="button">✕</button></div>
+  <div id="chatMessagesArea" class="chat-room-messages"></div>
+  <div id="replyPreviewBar" class="reply-preview-bar hidden"><div style="flex:1; border-left:3px solid var(--neon); padding-left:8px;"><span id="replyBarName" style="font-weight:700; color:var(--neon); display:block;">-</span><span id="replyBarText" style="color:var(--text-2); display:block;">-</span></div><button onclick="cancelReply()" type="button">✕</button></div>
+  <div id="recorderBar" class="recorder-bar hidden" style="display:flex; gap:12px; padding:8px 16px; background:var(--surface-2); border-top:1px solid var(--danger);"><span class="recorder-pulse" style="width:10px; height:10px; border-radius:50%; background:var(--danger);"></span><span id="recorderTimer" style="font-weight:700; color:var(--danger);">0:00</span><span style="flex:1; color:var(--text-3); font-size:12px;">Merekam...</span><button onclick="stopRecording(false)" type="button" class="btn-danger" style="width:34px; height:34px; border-radius:50%;">✕</button><button onclick="stopRecording(true)" type="button" class="btn-primary" style="width:34px; height:34px; border-radius:50%;">✓</button></div>
+  <div id="chatInputArea" class="chat-input-area">
+    <button onclick="document.getElementById('chatAttachInput').click()" class="chat-tool-btn" type="button"><i class="ph ph-paperclip"></i></button>
+    <input id="chatAttachInput" type="file" accept="image/*,video/*" class="hidden" />
+    <textarea id="chatInput" class="chat-input" placeholder="Pesan..." rows="1"></textarea>
+    <button id="chatVoiceBtn" onclick="startRecording()" class="chat-tool-btn" type="button"><i class="ph ph-microphone"></i></button>
+    <button id="chatSendBtn" onclick="sendTextMessage()" class="chat-tool-btn chat-send-btn hidden" type="button"><i class="ph-fill ph-paper-plane-right"></i></button>
+  </div>
+</div>
+
+<!-- MODALS -->
+<div id="waAddMenuModal" class="modal-overlay bottom-sheet">
+  <div class="modal">
+    <div class="modal-body" style="padding:20px;">
+      <div style="width:40px; height:4px; background:var(--text-3); border-radius:2px; margin:0 auto 20px;"></div>
+      <div onclick="openModal('createGroupModal'); closeModal('waAddMenuModal');" class="wa-menu-item"><div class="wa-icon" style="background:#25D366; color:#fff;"><i class="ph-fill ph-users-three"></i></div><span>Grup Baru</span></div>
+      <div onclick="closeModal('waAddMenuModal'); window.newContactAction();" class="wa-menu-item"><div class="wa-icon" style="background:#34B7F1; color:#fff;"><i class="ph-fill ph-user-plus"></i></div><span>Kontak Baru</span></div>
+      <div onclick="closeModal('waAddMenuModal')" class="wa-menu-item" style="color:var(--danger);"><div class="wa-icon" style="background:var(--danger-soft);"><i class="ph ph-x"></i></div><span>Batal</span></div>
     </div>
   </div>
+</div>
 
-  <script type="module" src="app.js"></script>
+<div id="shopModal" class="modal-overlay">
+  <div class="modal" style="max-height:85vh;">
+    <div class="modal-header"><div class="modal-title">Gpyth Shop</div><button onclick="closeModal('shopModal')" class="modal-close" type="button">✕</button></div>
+    <div class="modal-body" style="padding:0;">
+      <div style="display:flex; background:var(--surface-2); border-bottom:1px solid var(--neon-border);">
+        <button class="shop-tab active" onclick="window.switchShopTab('premium', this)" style="flex:1; padding:12px; font-weight:700; color:var(--neon); background:transparent; border:none; border-bottom:2px solid var(--neon);">Premium</button>
+        <button class="shop-tab" onclick="window.switchShopTab('stars', this)" style="flex:1; padding:12px; font-weight:700; color:var(--text-3); background:transparent; border:none; border-bottom:2px solid transparent;">Stars</button>
+        <button class="shop-tab" onclick="window.switchShopTab('gifts', this)" style="flex:1; padding:12px; font-weight:700; color:var(--text-3); background:transparent; border:none; border-bottom:2px solid transparent;">Gifts</button>
+      </div>
+      <div id="shopTabPremium" class="shop-content" style="padding:16px; display:block;">
+        <div class="shop-item"><div class="shop-icon" style="background:linear-gradient(135deg,#b8860b,#ffd700);"><i class="ph-fill ph-crown"></i></div><div class="shop-item-info"><div class="shop-item-title">Gpyth Premium</div><div class="shop-item-desc">Centang Biru, Tema, Unlimited Story.</div></div><div class="shop-price">Rp 15.000</div></div>
+        <button onclick="window.openCheckout('Premium Bulanan', '15000')" class="btn-primary btn-block">Beli Premium</button>
+      </div>
+      <div id="shopTabStars" class="shop-content" style="padding:16px; display:none;">
+        <div class="shop-item"><div class="shop-icon" style="background:#f59e0b; color:#fff;"><i class="ph-fill ph-star"></i></div><div class="shop-item-info"><div class="shop-item-title">50 Stars</div><div class="shop-item-desc">Mata uang virtual.</div></div><div class="shop-price">Rp 5.000</div></div>
+        <button onclick="window.openCheckout('50 Stars', '5000')" class="btn-secondary btn-block">Beli 50 Stars</button>
+      </div>
+      <div id="shopTabGifts" class="shop-content" style="padding:16px; display:none;">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+          <div onclick="window.openCheckout('Gift Teddy', '10000')" class="gift-card"><div style="font-size:40px;">🧸</div><div>Teddy Bear</div><div class="text-neon">10k</div></div>
+          <div onclick="window.openCheckout('Gift Mawar', '5000')" class="gift-card"><div style="font-size:40px;">🌹</div><div>Mawar</div><div class="text-neon">5k</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="checkoutModal" class="modal-overlay">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title">Konfirmasi Pembelian</div><button onclick="closeModal('checkoutModal')" class="modal-close" type="button">✕</button></div>
+    <div class="modal-body">
+      <p>Produk: <b id="coProductName" class="text-neon">-</b></p>
+      <p>Harga: <b id="coProductPrice" class="text-neon">-</b></p>
+      <div class="field"><label>Username Target</label><input id="coTargetUser" type="text" class="form-control" /></div>
+      <div class="field"><label>Metode Pembayaran</label><select class="form-control"><option>QRIS</option><option>Dana</option></select></div>
+      <div class="field"><label>Upload Bukti Transfer</label><input type="file" id="coProofFile" class="form-control" accept="image/*" style="padding:8px;" /></div>
+    </div>
+    <div class="modal-footer"><button onclick="closeModal('checkoutModal')" class="btn-secondary" type="button">Batal</button><button onclick="submitCheckout()" class="btn-primary" type="button">Kirim Pesanan</button></div>
+  </div>
+</div>
+
+<div id="chatOptionsModal" class="modal-overlay">
+  <div class="modal" style="max-width:380px;">
+    <div class="modal-header"><div class="modal-title">Opsi Chat</div><button onclick="closeModal('chatOptionsModal')" class="modal-close" type="button">✕</button></div>
+    <div class="modal-body" style="padding:0;">
+      <div class="profile-menu" style="margin:0;border:none;border-radius:0;">
+        <div onclick="window.seeProfileFromChat()" class="profile-menu-item" role="button"><div class="pmi-icon"><i class="ph ph-user"></i></div><div class="pmi-text">Lihat Profil</div></div>
+        <div onclick="window.renameContactAction()" class="profile-menu-item" role="button"><div class="pmi-icon"><i class="ph ph-pencil-simple"></i></div><div class="pmi-text">Ganti Nama Kontak</div></div>
+        <div onclick="closeModal('chatOptionsModal')" class="profile-menu-item" role="button" style="color:var(--danger);"><div class="pmi-icon" style="background:var(--danger-soft); color:var(--danger);"><i class="ph ph-trash"></i></div><div class="pmi-text">Bersihkan Chat</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="settingsModal" class="modal-overlay">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title">Pengaturan</div><button onclick="closeModal('settingsModal')" class="modal-close" type="button">✕</button></div>
+    <div class="modal-body">
+      <div class="settings-group"><div class="settings-group-title">Chat</div>
+        <div class="settings-row"><div><label>Enter untuk Kirim</label></div><label class="switch"><input type="checkbox" id="settingEnterSend" checked><span class="slider"></span></label></div>
+        <div class="settings-row"><div><label>Ukuran Font</label></div><select id="settingFont" class="form-control" style="width:auto; padding:6px; margin:0;"><option value="13px">Kecil</option><option value="14.5px" selected>Sedang</option><option value="16.5px">Besar</option></select></div>
+      </div>
+      <div class="settings-group">
+        <div class="settings-group-title">Izin Media</div>
+        <div class="settings-row">
+          <div><label>Izin Suara & Kamera</label></div>
+          <button onclick="window.testMediaPermission()" class="btn-secondary" style="padding:6px 12px; font-size:12px;">Tes Izin</button>
+        </div>
+      </div>
+      <button onclick="window.logoutAction()" class="btn-danger btn-block" style="margin-top:20px;">Keluar Akun</button>
+    </div>
+  </div>
+</div>
+
+<div id="editProfileModal" class="modal-overlay"><div class="modal"><div class="modal-header"><div class="modal-title">Edit Profil</div><button onclick="closeModal('editProfileModal')" class="modal-close">✕</button></div><div class="modal-body"><label>Nama</label><input id="editDisplayName" type="text" class="form-control" /><label>Bio</label><textarea id="editBio" class="form-control"></textarea><label>Link Musik</label><input id="editMusicLink" type="url" class="form-control" /></div><div class="modal-footer"><button onclick="closeModal('editProfileModal')" class="btn-secondary">Batal</button><button onclick="window.saveProfileAction()" class="btn-primary">Simpan</button></div></div></div>
+<div id="cropperModal" class="modal-overlay"><div class="modal"><div class="modal-header"><div class="modal-title">Crop</div><button onclick="closeModal('cropperModal')" class="modal-close">✕</button></div><div class="modal-body"><div style="height:300px; background:#000; overflow:hidden;"><img id="cropperImage" style="max-width:100%;" /></div></div><div class="modal-footer"><button onclick="closeModal('cropperModal')" class="btn-secondary">Batal</button><button onclick="window.saveCroppedAvatar()" class="btn-primary">Simpan</button></div></div></div>
+<div id="createGroupModal" class="modal-overlay"><div class="modal"><div class="modal-header"><div class="modal-title">Buat Grup</div><button onclick="closeModal('createGroupModal')" class="modal-close">✕</button></div><div class="modal-body"><input id="createGroupName" type="text" class="form-control" placeholder="Nama Grup" /></div><div class="modal-footer"><button onclick="closeModal('createGroupModal')" class="btn-secondary">Batal</button><button onclick="window.createGroupAction()" class="btn-primary">Buat</button></div></div></div>
+<div id="imageViewerModal" class="modal-overlay" style="background:rgba(0,0,0,0.9);"><div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;position:relative;"><img id="imageViewerImg" style="max-width:100%;max-height:100%;object-fit:contain;" /><button onclick="closeModal('imageViewerModal')" class="modal-close" style="position:absolute;top:20px;right:20px;width:44px;height:44px;font-size:22px;">✕</button></div></div>
+<div id="confirmModal" class="modal-overlay"><div class="modal" style="max-width:380px;"><div class="modal-header"><div id="confirmTitle" class="modal-title">Konfirmasi</div></div><div class="modal-body"><p id="confirmText" style="color:var(--text-2);">Yakin?</p></div><div class="modal-footer"><button onclick="closeModal('confirmModal')" class="btn-secondary" style="flex:1;">Batal</button><button id="btnConfirmYes" class="btn-danger" style="flex:1;">Ya</button></div></div></div>
+
+<script type="module" src="main.js"></script>
 </body>
 </html>
